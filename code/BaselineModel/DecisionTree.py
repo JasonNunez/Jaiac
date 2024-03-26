@@ -7,6 +7,8 @@ from sklearn.pipeline import make_pipeline
 import re
 import time
 
+from sklearn.tree import DecisionTreeClassifier
+
 # Load the dataset
 print("Loading data...")
 df = pd.read_csv('text.csv')
@@ -42,8 +44,8 @@ print("Text cleaned.")
 kf = KFold(n_splits=5, shuffle=True, random_state=3270)
 
 pipeline = make_pipeline(
-    TfidfVectorizer(max_features=1000000, binary=True, use_idf=True, stop_words='english', ngram_range=(1, 2)),
-    LogisticRegression(max_iter=100)
+    TfidfVectorizer(max_features=500,stop_words='english'),
+    DecisionTreeClassifier(max_depth=10, random_state=3270)
 )
 
 # Measure the time taken by the K-Fold cross-validation process
