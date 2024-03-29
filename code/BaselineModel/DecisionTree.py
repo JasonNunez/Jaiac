@@ -28,7 +28,7 @@ def clean_text(text):
     text = re.sub(' w e ', ' we ', text)  # Fixes w e -> we seperation
     text = re.sub(' we d ', ' wed ', text)  # Fixes we d -> wed seperation
     text = re.sub(' i d ', ' id ', text)  # Fixes i d -> id seperation
-    text = re.sub(' they d ', ' theyd ', text)  # Fixes i d -> id seperation
+    text = re.sub(' they d ', ' theyd ', text)  # Fixes they d -> theyd seperation
     return text
 
 
@@ -36,9 +36,11 @@ df['text'] = df['text'].apply(clean_text)
 
 df = df.drop_duplicates(subset='text')
 df = df.dropna()
-y = df['label']
 
 print("Text cleaned.")
+
+X = df['text']
+y = df['label']
 
 # Define the K-Fold cross-validator
 kf = KFold(n_splits=5, shuffle=True, random_state=3270)
@@ -50,7 +52,7 @@ pipeline = make_pipeline(
 
 # Measure the time taken by the K-Fold cross-validation process
 start_time = time.time()
-accuracies = cross_val_score(pipeline, df['text'], y, cv=kf, scoring='accuracy')
+accuracies = cross_val_score(pipeline, X, y, cv=kf, scoring='accuracy')
 end_time = time.time()
 
 # Print the results
