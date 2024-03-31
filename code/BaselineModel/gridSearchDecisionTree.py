@@ -1,4 +1,4 @@
-import r
+import re
 
 from sklearn.model_selection import GridSearchCV, KFold
 from sklearn.pipeline import Pipeline
