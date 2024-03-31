@@ -1,14 +1,14 @@
-import re
+import r
 
 from sklearn.model_selection import GridSearchCV, KFold
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-import pandas as pd
-import time
-
 from sklearn.tree import DecisionTreeClassifier
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
+import pandas as pd
+import time
 
 # Set option to display more rows
 pd.set_option('display.max_rows', 500)

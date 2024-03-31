@@ -24,8 +24,8 @@ from prepare_data import load_and_clean_data
 
 
 __author__ = "Your Name Here"
-__version__ = "1.0"
-__pylint__ = "x.x.x"
+__version__ = "Spring 2024"
+__pylint__ = "2.14.5"
 
 
 def run_pipeline(configuration, data, labels, cross_validator):
