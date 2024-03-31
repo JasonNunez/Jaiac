@@ -55,7 +55,7 @@ param_grid = {
 }
 
 # Define the GridSearchCV object
-grid_search = GridSearchCV(pipeline, param_grid, cv=kf, scoring='accuracy', n_jobs=-1)
+grid_search = GridSearchCV(pipeline, param_grid, cv=kf, scoring='accuracy', n_jobs=-1, verbose=4)
 
 # Train the model with grid search
 start_time = time.time()
