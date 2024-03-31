@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import cross_val_score, KFold
+from sklearn.model_selection import cross_val_score, KFold, GridSearchCV
 import time
 import re
 
@@ -45,18 +45,27 @@ pipeline = Pipeline([
     ('vectorizer', CountVectorizer()),
     ('classifier', MultinomialNB())
 ])
+# Define the parameter grid
+param_grid = {
+    'vectorizer__max_features': [None, 500, 1000, 2000],
+    'vectorizer__ngram_range': [(1, 1), (1, 2), (1, 3)],
+    'vectorizer__stop_words': [None, 'english'],
+    'classifier__alpha': [0.01, 0.1, 1.0, 10.0, 100.0],
+    'classifier__fit_prior': [True, False]
+}
 
-# Train the model
-pipeline.fit(X, y)
+# Define the GridSearchCV object
+grid_search = GridSearchCV(pipeline, param_grid, cv=kf, scoring='accuracy', n_jobs=-1)
 
+# Train the model with grid search
 start_time = time.time()
-accuracies = cross_val_score(pipeline, X, y, cv=kf, scoring='accuracy')
+grid_search.fit(X, y)
 end_time = time.time()
 
-# Print the results
-print(f"Accuracies across folds: {accuracies}")
-print(f"Average accuracy: {np.mean(accuracies)}")
-print(f"Time taken for 5-Fold CV: {end_time - start_time} seconds")
+# Print the best parameters and the corresponding accuracy
+print(f"Best parameters: {grid_search.best_params_}")
+print(f"Best cross-validation accuracy: {grid_search.best_score_}")
+print(f"Time taken for GridSearchCV: {end_time - start_time} seconds")
 
 
     
