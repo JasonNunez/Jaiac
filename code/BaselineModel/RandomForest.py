@@ -1,8 +1,8 @@
 import pandas as pd
-import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import cross_val_score, GridSearchCV, train_test_split
+from sklearn.model_selection import cross_val_score, GridSearchCV, train_test_split, KFold
+from sklearn.pipeline import Pipeline
 import re
 import time
 
@@ -34,43 +34,49 @@ df['text'] = df['text'].apply(clean_text)
 df = df.drop_duplicates(subset='text')
 df = df.dropna()
 
+# Define your text and labels
 print("Text cleaned.")
 
 X = df['text']
 y = df['label']
 
-# Split data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=3270)
+# Set up the pipeline
+pipeline = Pipeline([
+    ('tfidf', TfidfVectorizer(stop_words='english')),
+    ('rf', RandomForestClassifier())
+])
 
-# Define the TF-IDF vectorizer
-tfidf_vectorizer = TfidfVectorizer(max_features=10, stop_words='english')
-
-# Define the Random Forest classifier
-rf_classifier = RandomForestClassifier(random_state=3270)
-
-# Define hyperparameters to tune
+# Define the parameter grid
 param_grid = {
-    'n_estimators': [50, 100, 200],
-    'max_depth': [10, 10, 10, 10],
-    'min_samples_split': [2, 5, 10],
-    'min_samples_leaf': [1, 2, 4],
-    'max_features': ['auto', 'sqrt', 'log2']
+    'tfidf__max_features': [2000],
+    'tfidf__binary': [True],
+    'tfidf__use_idf': [True, False],
+    'tfidf__ngram_range': [(1, 1)],
+    'rf__n_estimators': [100, 200, 300],
+    'rf__max_depth': [10, 50, 100, 200],
+    'rf__min_samples_split': [10, 50, 100],
+    'rf__min_samples_leaf': [10, 20, 50],
+    'rf__max_features': ['sqrt', 'log2']
 }
 
-# Define the grid search with cross-validation
-grid_search = GridSearchCV(estimator=rf_classifier, param_grid=param_grid, cv=5, scoring='accuracy')
+# Set up GridSearchCV
+grid_search = GridSearchCV(pipeline, param_grid, scoring='accuracy', cv=KFold(n_splits=5, shuffle=True, random_state=3270), verbose=3, n_jobs=-1)
 
-# Measure the time taken by the grid search
+# Track the start time
 start_time = time.time()
-grid_search.fit(tfidf_vectorizer.fit_transform(X_train), y_train)
-end_time = time.time()
 
-# Print the best parameters and best score
-print("Best Parameters:", grid_search.best_params_)
-print("Best Score:", grid_search.best_score_)
-print("Time taken for Grid Search: {:.2f} seconds".format(end_time - start_time))
+# Execute the grid search
+grid_search.fit(X, y)
 
-# Evaluate the best model on the test set
-best_model = grid_search.best_estimator_
-accuracy = best_model.score(tfidf_vectorizer.transform(X_test), y_test)
-print("Accuracy on Test Set:", accuracy)
+# Calculate the duration
+duration = time.time() - start_time
+
+# Print the best parameters and their corresponding accuracy
+print(f"Best parameters: {grid_search.best_params_}")
+print(f"Best accuracy: {grid_search.best_score_}")
+print(f"Time taken: {duration} seconds")
+
+# If you want the top 5 configurations:
+results = pd.DataFrame(grid_search.cv_results_)
+top5 = results.nlargest(5, 'mean_test_score')
+print(top5[['params', 'mean_test_score', 'rank_test_score']])
