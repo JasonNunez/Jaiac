@@ -40,7 +40,7 @@ def run_pipeline(configuration, data, labels, cross_validator):
         ))
     ])
 
-    accuracies = cross_val_score(pipeline, data, labels, cv=cross_validator, scoring='accuracy', n_jobs=-1)
+    accuracies = cross_val_score(pipeline, data, labels, cv=cross_validator, scoring='accuracy')
     avg_accuracy = np.mean(accuracies)
     return avg_accuracy, configuration
 
