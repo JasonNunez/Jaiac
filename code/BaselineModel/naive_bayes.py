@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Multinomial Naïve Bayes model for emotional text classification.
-Note: C0103 to be consistent with sklearn namings.
+
 """
 
 import time
@@ -19,7 +19,7 @@ __pylint__= '2.14.5'
 
 def main():
     """
-        Represents the Multinomial Naïve Bayes algorithm.
+    Main function to load data, define cross-validator, and run configurations.
     """
     df = load_and_clean_data('text.csv')
 

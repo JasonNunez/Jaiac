@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
 """
-Text classification script using logistic regression and TF-IDF vectorization.
+Text classification script using logistic regression and TF-Idataframe vectorization.
 
 This script loads and cleans a dataset of text, then evaluates various configurations
-of a machine learning pipeline using logistic regression and TF-IDF vectorization
+of a machine learning pipeline using logistic regression and TF-Idataframe vectorization
 for text classification. It utilizes scikit-learn for building and evaluating the
 model through cross-validation.
-
-Author: Jason Nunez
-Version: 1.0
-Pylint: x.x.x
 """
 
 import time
@@ -23,9 +19,9 @@ from sklearn.pipeline import Pipeline
 from prepare_data import load_and_clean_data
 
 
-__author__ = "Your Name Here"
-__version__ = "1.0"
-__pylint__ = "x.x.x"
+__author__ = "Jason Nunez"
+__version__ = "Spring 2024"
+__pylint__ = "2.14.5"
 
 
 def run_pipeline(configuration, data, labels, cross_validator):
@@ -33,10 +29,11 @@ def run_pipeline(configuration, data, labels, cross_validator):
     Runs the pipeline for a given configuration on the provided dataset.
 
     Args:
-        configuration (dict): Configuration settings for the TF-IDF vectorizer and logistic regression classifier.
+        configuration (dict): Configuration settings for the TF-Idataframe vectorizer
+        and logistic regression classifier.
         data (pandas.Series): The text data to classify.
         labels (pandas.Series): The labels for the text data.
-        cross_validator (KFold): The cross-validation splitting strategy.
+        cross_validator (kfoldold): The cross-validation splitting strategy.
     """
     pipeline = Pipeline([
         ('tfidf', TfidfVectorizer(
@@ -44,7 +41,7 @@ def run_pipeline(configuration, data, labels, cross_validator):
             max_features=configuration['tfidf__max_features'],
             ngram_range=configuration['tfidf__ngram_range'],
             stop_words=configuration['tfidf__stop_words'],
-            use_idf=configuration['tfidf__use_idf']
+            use_idataframe=configuration['tfidf__use_idf']
         )),
         ('clf', LogisticRegression(max_iter=configuration['clf__max_iter']))
     ])
@@ -64,7 +61,7 @@ def main():
     """
     Main function to load data, define cross-validator, and run configurations.
     """
-    df = load_and_clean_data('text.csv')
+    dataframe = load_and_clean_data('text.csv')
     configurations = {
         # Config 1: 0.928%
         1: {
@@ -113,14 +110,14 @@ def main():
         }
     }
 
-    x = df['text']
-    y = df['label']
+    x_text = dataframe['text']
+    y_labels = dataframe['label']
 
-    kf = KFold(n_splits=5, shuffle=True, random_state=3270)
+    kfold = KFold(n_splits=5, shuffle=True, random_state=3270)
 
     for config_number, config_params in configurations.items():
         print(f"Running configuration number {config_number}")
-        run_pipeline(config_params, x, y, kf)
+        run_pipeline(config_params, x_text, y_labels, kfold)
 
 
 if __name__ == '__main__':
