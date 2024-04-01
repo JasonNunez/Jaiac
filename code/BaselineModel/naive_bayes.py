@@ -21,7 +21,7 @@ def main():
     """
     Main function to load data, define cross-validator, and run configurations.
     """
-    df = load_and_clean_data('text.csv')
+    df = load_and_clean_data('dev.csv')
 
     X = df['text']
     y = df['label']

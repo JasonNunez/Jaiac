@@ -41,7 +41,7 @@ def run_pipeline(configuration, data, labels, cross_validator):
             max_features=configuration['tfidf__max_features'],
             ngram_range=configuration['tfidf__ngram_range'],
             stop_words=configuration['tfidf__stop_words'],
-            use_idataframe=configuration['tfidf__use_idf']
+            use_idf=configuration['tfidf__use_idf']
         )),
         ('clf', LogisticRegression(max_iter=configuration['clf__max_iter']))
     ])
@@ -61,7 +61,7 @@ def main():
     """
     Main function to load data, define cross-validator, and run configurations.
     """
-    dataframe = load_and_clean_data('text.csv')
+    dataframe = load_and_clean_data('dev.csv')
     configurations = {
         # Config 1: 0.928%
         1: {
@@ -118,7 +118,6 @@ def main():
     for config_number, config_params in configurations.items():
         print(f"Running configuration number {config_number}")
         run_pipeline(config_params, x_text, y_labels, kfold)
-
 
 if __name__ == '__main__':
     main()
