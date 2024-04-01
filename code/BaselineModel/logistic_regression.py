@@ -11,7 +11,7 @@ model through cross-validation.
 import time
 
 import numpy as np
-from sklearn.feature_extraction.text import TfidataframeVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score, KFold
 from sklearn.pipeline import Pipeline
@@ -36,12 +36,12 @@ def run_pipeline(configuration, data, labels, cross_validator):
         cross_validator (kfoldold): The cross-validation splitting strategy.
     """
     pipeline = Pipeline([
-        ('tfidataframe', TfidataframeVectorizer(
-            binary=configuration['tfidataframe__binary'],
-            max_features=configuration['tfidataframe__max_features'],
-            ngram_range=configuration['tfidataframe__ngram_range'],
-            stop_words=configuration['tfidataframe__stop_words'],
-            use_idataframe=configuration['tfidataframe__use_idataframe']
+        ('tfidf', TfidfVectorizer(
+            binary=configuration['tfidf__binary'],
+            max_features=configuration['tfidf__max_features'],
+            ngram_range=configuration['tfidf__ngram_range'],
+            stop_words=configuration['tfidf__stop_words'],
+            use_idataframe=configuration['tfidf__use_idf']
         )),
         ('clf', LogisticRegression(max_iter=configuration['clf__max_iter']))
     ])
@@ -66,47 +66,47 @@ def main():
         # Config 1: 0.928%
         1: {
             'clf__max_iter': 100,
-            'tfidataframe__binary': True,
-            'tfidataframe__max_features': 2000,
-            'tfidataframe__ngram_range': (1, 2),
-            'tfidataframe__stop_words': 'english',
-            'tfidataframe__use_idataframe': True
+            'tfidf__binary': True,
+            'tfidf__max_features': 2000,
+            'tfidf__ngram_range': (1, 2),
+            'tfidf__stop_words': 'english',
+            'tfidf__use_idf': True
         },
         # Config 2: 0.927%
         2: {
             'clf__max_iter': 100,
-            'tfidataframe__binary': True,
-            'tfidataframe__max_features': 2000,
-            'tfidataframe__ngram_range': (1, 2),
-            'tfidataframe__stop_words': 'english',
-            'tfidataframe__use_idataframe': False
+            'tfidf__binary': True,
+            'tfidf__max_features': 2000,
+            'tfidf__ngram_range': (1, 2),
+            'tfidf__stop_words': 'english',
+            'tfidf__use_idf': False
         },
         # Config 3: 0.927%
         3: {
             'clf__max_iter': 500,
-            'tfidataframe__binary': True,
-            'tfidataframe__max_features': 2000,
-            'tfidataframe__ngram_range': (1, 2),
-            'tfidataframe__stop_words': 'english',
-            'tfidataframe__use_idataframe': True
+            'tfidf__binary': True,
+            'tfidf__max_features': 2000,
+            'tfidf__ngram_range': (1, 2),
+            'tfidf__stop_words': 'english',
+            'tfidf__use_idf': True
         },
         # Config 4: 0.927%
         4: {
             'clf__max_iter': 1000,
-            'tfidataframe__binary': True,
-            'tfidataframe__max_features': 2000,
-            'tfidataframe__ngram_range': (1, 2),
-            'tfidataframe__stop_words': 'english',
-            'tfidataframe__use_idataframe': True
+            'tfidf__binary': True,
+            'tfidf__max_features': 2000,
+            'tfidf__ngram_range': (1, 2),
+            'tfidf__stop_words': 'english',
+            'tfidf__use_idf': True
         },
         # Config 5: 0.927%
         5: {
             'clf__max_iter': 2000,
-            'tfidataframe__binary': True,
-            'tfidataframe__max_features': 2000,
-            'tfidataframe__ngram_range': (1, 2),
-            'tfidataframe__stop_words': 'english',
-            'tfidataframe__use_idataframe': True
+            'tfidf__binary': True,
+            'tfidf__max_features': 2000,
+            'tfidf__ngram_range': (1, 2),
+            'tfidf__stop_words': 'english',
+            'tfidf__use_idf': True
         }
     }
 

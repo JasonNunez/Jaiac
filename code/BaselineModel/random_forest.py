@@ -4,7 +4,7 @@ Random Forest model for emotional text classification.
 """
 import time
 import pandas as pd
-from sklearn.feature_extraction.text import TfidataframeVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV, KFold
 from sklearn.pipeline import Pipeline
@@ -25,16 +25,16 @@ def main():
 
     # Set up the pipeline
     pln = Pipeline([
-        ('tfidataframe', TfidataframeVectorizer(stop_words='english')),
+        ('tfidf', TfidfVectorizer(stop_words='english')),
         ('rf', RandomForestClassifier())
     ])
 
     # Define the parameter grid
     param_grid = {
-        'tfidataframe__max_features': [2000],
-        'tfidataframe__binary': [True],
-        'tfidataframe__use_idataframe': [True, False],
-        'tfidataframe__ngram_range': [(1, 1)],
+        'tfidf__max_features': [2000],
+        'tfidf__binary': [True],
+        'tfidf__use_idf': [True, False],
+        'tfidf__ngram_range': [(1, 1)],
         'rf__n_estimators': [100, 200, 300],
         'rf__max_depth': [10, 50, 100, 200],
         'rf__min_samples_split': [10, 50, 100],
