@@ -8,7 +8,7 @@ import pandas as pd
 
 from catboost import CatBoostClassifier
 from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import TfidataframeVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import GridSearchCV, KFold
 from prepare_data import load_and_clean_data
 
@@ -36,17 +36,17 @@ def main():
 
     # Set up the pipeline
     pipeline = Pipeline([
-        ('tfidataframe', TfidataframeVectorizer(stop_words='english')),
+        ('tfidataframe', TfidfVectorizer(stop_words='english')),
         ('catboost', CatBoostClassifier(task_type='GPU', verbose=0))
     ])
 
     # Define the parameter grid
     param_grid = {
-        'tfidataframe__max_features': [2000],
-        'tfidataframe__binary': [True],
-        'tfidataframe__use_idataframe': [True, False],
-        'tfidataframe__stop_words': ['english'],
-        'tfidataframe__ngram_range': [(1, 1)],
+        'tfidf__max_features': [2000],
+        'tfidf__binary': [True],
+        'tfidf__use_idf': [True, False],
+        'tfidf__stop_words': ['english'],
+        'tfidf__ngram_range': [(1, 1)],
         'catboost__iterations': [100, 500, 1000, 2000],  # Number of trees.
         'catboost__learning_rate': [0.01, 0.05, 0.1, 0.2],  # Used to prevent overfitting.
         'catboost__depth': [6, 10, 20, 30],  # Depth of each tree.
