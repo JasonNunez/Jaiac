@@ -48,7 +48,7 @@ def main():
     """
     Main function to load data, define cross-validator, and run configurations.
     """
-    dataframe = load_and_clean_data('text.csv')
+    dataframe = load_and_clean_data('dev.csv')
 
     configurations = {
         1: {
