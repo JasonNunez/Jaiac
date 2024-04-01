@@ -11,7 +11,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.tree import DecisionTreeClassifier
 from prepare_data import load_and_clean_data
 
-__author__ = 'NAME'
+__author__ = 'Jason Nunez'
 __version__ = 'Spring 2024'
 __pylint__= '2.14.5'
 
