@@ -178,6 +178,44 @@ def train_and_evaluate_model_random(config_params, train_data, train_labels, tes
     print("---------------------------------------------------------")
 
 
+from sklearn.naive_bayes import MultinomialNB
+
+def train_and_evaluate_model_naive(config_params, train_data, train_labels, test_data, test_labels):
+    """
+    Trains the model with Multinomial Naive Bayes on the training dataset and evaluates it on the testing dataset.
+
+    Args:
+        config_params (dict): Configuration for the TF-IDF vectorizer and Multinomial Naive Bayes classifier.
+        train_data (pandas.Series): The text data to train on.
+        train_labels (pandas.Series): The labels for the training data.
+        test_data (pandas.Series): The text data to test on.
+        test_labels (pandas.Series): The labels for the testing data.
+    """
+    pipeline = Pipeline([
+        ('tfidf', TfidfVectorizer(
+            max_features=config_params.get('vectorizer__max_features', None),
+            ngram_range=config_params.get('vectorizer__ngram_range', (1, 1)),
+            stop_words=config_params.get('vectorizer__stop_words', 'english'),
+        )),
+        ('naive_bayes', MultinomialNB(
+            alpha=config_params.get('classifier__alpha', 1.0),
+            fit_prior=config_params.get('classifier__fit_prior', True),
+        ))
+    ])
+
+    start_time = time.time()
+    pipeline.fit(train_data, train_labels)
+    predictions = pipeline.predict(test_data)
+    accuracy = accuracy_score(test_labels, predictions)
+    end_time = time.time()
+
+    print(f"Running configuration: {config_params}")
+    print(f"Test accuracy: {accuracy}")
+    print(f"Time taken: {end_time - start_time} seconds")
+    print("---------------------------------------------------------")
+
+
+
 def main():
     """
     Main function to load data, define cross-validator, and run configurations.
@@ -404,6 +442,44 @@ def main():
         }
     }
 
+    naive_bayes_configurations = {
+        1: {
+            'classifier__alpha': 0.1,
+            'classifier__fit_prior': True,
+            'vectorizer__max_features': 2000,
+            'vectorizer__ngram_range': (1, 2),
+            'vectorizer__stop_words': 'english'
+        },
+        2: {
+            'classifier__alpha': 0.01,
+            'classifier__fit_prior': True,
+            'vectorizer__max_features': 2000,
+            'vectorizer__ngram_range': (1, 2),
+            'vectorizer__stop_words': 'english'
+        },
+        3: {
+            'classifier__alpha': 1.0,
+            'classifier__fit_prior': True,
+            'vectorizer__max_features': 2000,
+            'vectorizer__ngram_range': (1, 2),
+            'vectorizer__stop_words': 'english'
+        },
+        4: {
+            'classifier__alpha': 0.1,
+            'classifier__fit_prior': True,
+            'vectorizer__max_features': 2000,
+            'vectorizer__ngram_range': (1, 3),
+            'vectorizer__stop_words': 'english'
+        },
+        5: {
+            'classifier__alpha': 0.01,
+            'classifier__fit_prior': True,
+            'vectorizer__max_features': 2000,
+            'vectorizer__ngram_range': (1, 3),
+            'vectorizer__stop_words': 'english'
+        }
+    }
+
     for config_number, config_params in log_configurations.items():
         print(f"Running configuration number {config_number}")
         train_and_evaluate_model_log(config_params, train_x, train_y, test_x, test_y)
@@ -419,6 +495,10 @@ def main():
     for config_number, config_params in random_forest_configurations.items():
         print(f"Running configuration number {config_number}")
         train_and_evaluate_model_random(config_params, train_x, train_y, test_x, test_y)
+
+    for config_number, config_params in naive_bayes_configurations.items():
+        print(f"Running configuration number {config_number}")
+        train_and_evaluate_model_naive(config_params, train_x, train_y, test_x, test_y)
 
 
 if __name__ == '__main__':
