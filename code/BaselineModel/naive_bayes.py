@@ -1,71 +1,113 @@
 #!/usr/bin/env python3
 """
 Multinomial Naïve Bayes model for emotional text classification.
-
 """
 
-import time
-
-import pandas as pd
+import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.model_selection import cross_val_score, KFold
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import KFold, GridSearchCV
 from prepare_data import load_and_clean_data
 
 __author__ = 'Alec Neal'
 __version__ = 'Spring 2024'
-__pylint__= '2.14.5'
+__pylint__ = '2.14.5'
 
-# pylint: disable=C0103
+
+def run_pipeline(configuration, data, labels, cross_validator):
+    """
+    Runs the pipeline for a given configuration on the provided dataset.
+    Returns the average accuracy and configuration details for further processing.
+
+    Args:
+        configuration (dict): Configuration settings for the CountVectorizer
+        and MultinomialNB classifier.
+        data (pandas.Series): The text data to classify.
+        labels (pandas.Series): The labels for the text data.
+        cross_validator (KFold): The cross-validation splitting strategy.
+    """
+    pipeline = Pipeline([
+        ('vectorizer', CountVectorizer(
+            max_features=configuration['vectorizer__max_features'],
+            ngram_range=configuration['vectorizer__ngram_range'],
+            stop_words=configuration['vectorizer__stop_words']
+        )),
+        ('classifier', MultinomialNB(
+            alpha=configuration['classifier__alpha'],
+            fit_prior=configuration['classifier__fit_prior']
+        ))
+    ])
+
+    accuracies = cross_val_score(pipeline, data, labels, cv=cross_validator, scoring='accuracy', n_jobs=-1)
+
+    avg_accuracy = np.mean(accuracies)
+    return avg_accuracy, configuration
+
 
 def main():
     """
     Main function to load data, define cross-validator, and run configurations.
     """
-    # Set option to display more rows
-    pd.set_option('display.max_rows', 500)
-
-    # Set option to display more columns
-    pd.set_option('display.max_columns', 50)
-
-    pd.set_option('display.max_colwidth', None)
-
-    df = load_and_clean_data('dev.csv')
-
-    X = df['text']
-    y = df['label']
-
-    kf = KFold(n_splits=2, shuffle=True, random_state=3270)
-
-    pl = Pipeline([
-        ('vectorizer', CountVectorizer()),
-        ('classifier', MultinomialNB())
-    ])
-
-    param_grid = {
-        'vectorizer__max_features': [None, 500, 1000, 2000],
-        'vectorizer__ngram_range': [(1, 1), (1, 2), (1, 3)],
-        'vectorizer__stop_words': [None, 'english'],
-        'classifier__alpha': [0.01, 0.1, 1.0, 10.0, 100.0],
-        'classifier__fit_prior': [True, False]
+    dataframe = load_and_clean_data('dev.csv')
+    configurations = {
+        1: {
+            'classifier__alpha': 0.1,
+            'classifier__fit_prior': True,
+            'vectorizer__max_features': 2000,
+            'vectorizer__ngram_range': (1, 2),
+            'vectorizer__stop_words': 'english'
+        },
+        2: {
+            'classifier__alpha': 0.01,
+            'classifier__fit_prior': True,
+            'vectorizer__max_features': 2000,
+            'vectorizer__ngram_range': (1, 2),
+            'vectorizer__stop_words': 'english'
+        },
+        3: {
+            'classifier__alpha': 1.0,
+            'classifier__fit_prior': True,
+            'vectorizer__max_features': 2000,
+            'vectorizer__ngram_range': (1, 2),
+            'vectorizer__stop_words': 'english'
+        },
+        4: {
+            'classifier__alpha': 0.1,
+            'classifier__fit_prior': True,
+            'vectorizer__max_features': 2000,
+            'vectorizer__ngram_range': (1, 3),
+            'vectorizer__stop_words': 'english'
+        },
+        5: {
+            'classifier__alpha': 0.01,
+            'classifier__fit_prior': True,
+            'vectorizer__max_features': 2000,
+            'vectorizer__ngram_range': (1, 3),
+            'vectorizer__stop_words': 'english'
+        }
     }
 
-    grid_search = GridSearchCV(pl, param_grid, cv=kf, scoring='accuracy', n_jobs=-1, verbose=4)
+    x_text = dataframe['text']
+    y_labels = dataframe['label']
 
-    start_time = time.time()
-    grid_search.fit(X, y)
-    end_time = time.time()
+    kfold = KFold(n_splits=5, shuffle=True, random_state=3270)
 
-    print(f"Best parameters: {grid_search.best_params_}")
-    print(f"Best cross-validation accuracy: {grid_search.best_score_}")
-    print(f"Time taken for GridSearchCV: {end_time - start_time} seconds")
+    results = []
 
-    # If you want the top 5 configurations:
-    results = pd.DataFrame(grid_search.cv_results_)
-    top5 = results.nlargest(5, 'mean_test_score')
-    print(top5[['params', 'mean_test_score', 'rank_test_score']])
+    for config_number, config_params in configurations.items():
+        print(f"Running configuration number {config_number}")
+        avg_accuracy, config = run_pipeline(config_params, x_text, y_labels, kfold)
+        results.append((avg_accuracy, config))
 
-if __name__ == "__main__":
+    # Sort the results by average accuracy in descending order
+    sorted_results = sorted(results, key=lambda x: x[0], reverse=True)
+
+    # Print summary of top configurations
+    print("Top Multinomial Naive Bayes Configurations:")
+    for avg_accuracy, config in sorted_results:
+        print(f"Accuracy: {avg_accuracy:.4f}, Configuration: {config}")
+
+
+if __name__ == '__main__':
     main()
-    

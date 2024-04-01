@@ -2,11 +2,10 @@
 """
 Random Forest model for emotional text classification.
 """
-import time
-import pandas as pd
+import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV, KFold
+from sklearn.model_selection import cross_val_score, KFold
 from sklearn.pipeline import Pipeline
 from prepare_data import load_and_clean_data
 
@@ -14,58 +13,122 @@ __author__ = "Liam Cole"
 __version__ = "Spring 2024"
 __pylint__ = "2.14.5"
 
+def run_pipeline(configuration, data, labels, cross_validator):
+    """
+    Runs the pipeline for a given configuration on the provided dataset.
+    Returns the average accuracy and configuration details for further processing.
+
+    Args:
+        configuration (dict): Configuration settings for the TF-IDF vectorizer
+        and RandomForestClassifier.
+        data (pandas.Series): The text data to classify.
+        labels (pandas.Series): The labels for the text data.
+        cross_validator (KFold): The cross-validation splitting strategy.
+    """
+    pipeline = Pipeline([
+        ('tfidf', TfidfVectorizer(
+            binary=configuration['tfidf__binary'],
+            max_features=configuration['tfidf__max_features'],
+            ngram_range=configuration['tfidf__ngram_range'],
+            use_idf=configuration['tfidf__use_idf'],
+            stop_words='english'  # Assuming all configurations use English stop words
+        )),
+        ('rf', RandomForestClassifier(
+            n_estimators=configuration['rf__n_estimators'],
+            max_depth=configuration['rf__max_depth'],
+            min_samples_split=configuration['rf__min_samples_split'],
+            min_samples_leaf=configuration['rf__min_samples_leaf'],
+            max_features=configuration['rf__max_features']
+        ))
+    ])
+
+    accuracies = cross_val_score(pipeline, data, labels, cv=cross_validator, scoring='accuracy', n_jobs=-1)
+
+    avg_accuracy = np.mean(accuracies)
+    return avg_accuracy, configuration
+
 def main():
     """
     Main function to load data, define cross-validator, and run configurations.
     """
     dataframe = load_and_clean_data('dev.csv')
+    configurations = {
+        1: {
+            'rf__max_depth': 200,
+            'rf__max_features': 'sqrt',
+            'rf__min_samples_leaf': 10,
+            'rf__min_samples_split': 50,
+            'rf__n_estimators': 300,
+            'tfidf__binary': True,
+            'tfidf__max_features': 2000,
+            'tfidf__ngram_range': (1, 1),
+            'tfidf__use_idf': False,
+        },
+        2: {
+            'rf__max_depth': 200,
+            'rf__max_features': 'sqrt',
+            'rf__min_samples_leaf': 10,
+            'rf__min_samples_split': 50,
+            'rf__n_estimators': 300,
+            'tfidf__binary': True,
+            'tfidf__max_features': 2000,
+            'tfidf__ngram_range': (1, 1),
+            'tfidf__use_idf': True,
+        },
+        3: {
+            'rf__max_depth': 100,
+            'rf__max_features': 'log2',
+            'rf__min_samples_leaf': 50,
+            'rf__min_samples_split': 100,
+            'rf__n_estimators': 300,
+            'tfidf__binary': True,
+            'tfidf__max_features': 2000,
+            'tfidf__ngram_range': (1, 1),
+            'tfidf__use_idf': False,
+        },
+        4: {
+            'rf__max_depth': 100,
+            'rf__max_features': 'log2',
+            'rf__min_samples_leaf': 50,
+            'rf__min_samples_split': 100,
+            'rf__n_estimators': 300,
+            'tfidf__binary': False,
+            'tfidf__max_features': 2000,
+            'tfidf__ngram_range': (1, 1),
+            'tfidf__use_idf': False,
+        },
+        5: {
+            'rf__max_depth': 100,
+            'rf__max_features': 'log2',
+            'rf__min_samples_leaf': 50,
+            'rf__min_samples_split': 100,
+            'rf__n_estimators': 100,
+            'tfidf__binary': True,
+            'tfidf__max_features': 2000,
+            'tfidf__ngram_range': (1, 1),
+            'tfidf__use_idf': False,
+        }
+    }
 
     x_text = dataframe['text']
     y_labels = dataframe['label']
 
-    # Set up the pipeline
-    pln = Pipeline([
-        ('tfidf', TfidfVectorizer(stop_words='english')),
-        ('rf', RandomForestClassifier())
-    ])
-
-    # Define the parameter grid
-    param_grid = {
-        'tfidf__max_features': [2000],
-        'tfidf__binary': [True],
-        'tfidf__use_idf': [True, False],
-        'tfidf__ngram_range': [(1, 1)],
-        'rf__n_estimators': [100, 200, 300],
-        'rf__max_depth': [10, 50, 100, 200],
-        'rf__min_samples_split': [10, 50, 100],
-        'rf__min_samples_leaf': [10, 20, 50],
-        'rf__max_features': ['sqrt', 'log2']
-    }
-
     kfold = KFold(n_splits=5, shuffle=True, random_state=3270)
 
-    # Set up GridSearchCV
-    grid_search = GridSearchCV(pln, param_grid, scoring='accuracy', cv=kfold, verbose=3, n_jobs=-1)
+    results = []
 
-    # Track the start time
-    start_time = time.time()
+    for config_number, config_params in configurations.items():
+        print(f"Running configuration number {config_number}")
+        avg_accuracy, config = run_pipeline(config_params, x_text, y_labels, kfold)
+        results.append((avg_accuracy, config))
 
-    # Execute the grid search
-    grid_search.fit(x_text, y_labels)
+    # Sort the results by average accuracy in descending order
+    sorted_results = sorted(results, key=lambda x: x[0], reverse=True)
 
-    # Calculate the duration
-    duration = time.time() - start_time
-
-    # Print the best parameters and their corresponding accuracy
-    print(f"Best parameters: {grid_search.best_params_}")
-    print(f"Best accuracy: {grid_search.best_score_}")
-    print(f"Time taken: {duration} seconds")
-
-    # If you want the top 5 configurations:
-    results = pd.DataFrame(grid_search.cv_results_)
-    top5 = results.nlargest(5, 'mean_test_score')
-    print(top5[['params', 'mean_test_score', 'rank_test_score']])
+    # Print summary of top configurations
+    print("Top Random Forest Configurations:")
+    for avg_accuracy, config in sorted_results:
+        print(f"Accuracy: {avg_accuracy:.4f}, Configuration: {config}")
 
 if __name__ == '__main__':
     main()
-    
