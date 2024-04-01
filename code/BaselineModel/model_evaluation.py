@@ -13,6 +13,7 @@ import time
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score, KFold
 from sklearn.pipeline import Pipeline
 
@@ -24,16 +25,16 @@ __version__ = "Spring 2024"
 __pylint__ = "2.14.5"
 
 
-def run_pipeline(configuration, data, labels, cross_validator):
+def train_and_evaluate_model_log(configuration, train_data, train_labels, test_data, test_labels):
     """
-    Runs the pipeline for a given configuration on the provided dataset.
+    Trains the model on the "dev" dataset and evaluates it on the "test" dataset.
 
     Args:
-        configuration (dict): Configuration settings for the TF-Idataframe vectorizer
-        and logistic regression classifier.
-        data (pandas.Series): The text data to classify.
-        labels (pandas.Series): The labels for the text data.
-        cross_validator (kfoldold): The cross-validation splitting strategy.
+        configuration (dict): Configuration for the TF-IDF vectorizer and logistic regression classifier.
+        train_data (pandas.Series): The text data to train on.
+        train_labels (pandas.Series): The labels for the training data.
+        test_data (pandas.Series): The text data to test on.
+        test_labels (pandas.Series): The labels for the testing data.
     """
     pipeline = Pipeline([
         ('tfidf', TfidfVectorizer(
@@ -47,12 +48,13 @@ def run_pipeline(configuration, data, labels, cross_validator):
     ])
 
     start_time = time.time()
-    accuracies = cross_val_score(pipeline, data, labels, cv=cross_validator, scoring='accuracy')
+    pipeline.fit(train_data, train_labels)
+    predictions = pipeline.predict(test_data)
+    accuracy = accuracy_score(test_labels, predictions)
     end_time = time.time()
 
     print(f"Running configuration: {configuration}")
-    print(f"Accuracies across folds: {accuracies}")
-    print(f"Average accuracy: {np.mean(accuracies)}")
+    print(f"Test accuracy: {accuracy}")
     print(f"Time taken: {end_time - start_time} seconds")
     print("---------------------------------------------------------")
 
@@ -61,7 +63,16 @@ def main():
     """
     Main function to load data, define cross-validator, and run configurations.
     """
-    dataframe = load_and_clean_data('text.csv')
+    # Load training data
+    train_df = load_and_clean_data('dev.csv')
+    train_x = train_df['text']
+    train_y = train_df['label']
+
+    # Load testing data
+    test_df = load_and_clean_data('test.csv')
+    test_x = test_df['text']
+    test_y = test_df['label']
+
     configurations = {
         # Config 1: 0.928%
         1: {
@@ -110,14 +121,9 @@ def main():
         }
     }
 
-    x_text = dataframe['text']
-    y_labels = dataframe['label']
-
-    kfold = KFold(n_splits=5, shuffle=True, random_state=3270)
-
     for config_number, config_params in configurations.items():
         print(f"Running configuration number {config_number}")
-        run_pipeline(config_params, x_text, y_labels, kfold)
+        train_and_evaluate_model_log(config_params, train_x, train_y, test_x, test_y)
 
 if __name__ == '__main__':
     main()
