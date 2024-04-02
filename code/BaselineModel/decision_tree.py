@@ -13,18 +13,19 @@ __author__ = 'Jason Nunez'
 __version__ = 'Spring 2024'
 __pylint__= '2.14.5'
 
-def run_pipeline(configuration, data, labels, cross_validator):
+def run_pipeline(configuration, data, labels, c_val):
     """
     Runs the pipeline for a given configuration on the provided dataset.
     Returns the average accuracy and configuration details for further processing.
 
     Args:
-        configuration (dict): Configuration settings for the TF-IDF vectorizer and DecisionTreeClassifier.
+        configuration (dict): Configuration settings for the
+        TF-IDF vectorizer and DecisionTreeClassifier.
         data (pandas.Series): The text data to classify.
         labels (pandas.Series): The labels for the text data.
         cross_validator (KFold): The cross-validation splitting strategy.
     """
-    pipeline = Pipeline([
+    pline = Pipeline([
         ('tfidf', TfidfVectorizer(
             binary=configuration['tfidf__binary'],
             max_features=configuration['tfidf__max_features'],
@@ -41,7 +42,7 @@ def run_pipeline(configuration, data, labels, cross_validator):
         ))
     ])
 
-    accuracies = cross_val_score(pipeline, data, labels, cv=cross_validator, scoring='accuracy', n_jobs=-1)
+    accuracies = cross_val_score(pline, data, labels, cv=c_val, scoring='accuracy', n_jobs=-1)
     avg_accuracy = np.mean(accuracies)
     return avg_accuracy, configuration
 
@@ -49,7 +50,7 @@ def main():
     """
     Main function to load data, define cross-validator, and run configurations.
     """
-    df = load_and_clean_data('dev.csv')
+    dataframe = load_and_clean_data('dev.csv')
 
     configurations = {
         1: {
@@ -109,16 +110,16 @@ def main():
         }
     }
 
-    X = df['text']
-    y = df['label']
+    x_text = dataframe['text']
+    y_labels = dataframe['label']
 
-    kf = KFold(n_splits=5, shuffle=True, random_state=3270)
+    kfold = KFold(n_splits=5, shuffle=True, random_state=3270)
 
     results = []
 
     for config_number, config_params in configurations.items():
         print(f"Running configuration number {config_number}")
-        avg_accuracy, config = run_pipeline(config_params, X, y, kf)
+        avg_accuracy, config = run_pipeline(config_params, x_text, y_labels, kfold)
         results.append((avg_accuracy, config))
 
     # Sort the results by average accuracy in descending order

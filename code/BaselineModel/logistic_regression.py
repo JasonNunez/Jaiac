@@ -8,7 +8,6 @@ for text classification. It utilizes scikit-learn for building and evaluating th
 model through cross-validation.
 """
 
-import time
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -22,7 +21,7 @@ __version__ = "Spring 2024"
 __pylint__ = "2.14.5"
 
 
-def run_pipeline(configuration, data, labels, cross_validator):
+def run_pipeline(configuration, data, labels, c_val):
     """
     Runs the pipeline for a given configuration on the provided dataset.
     Returns the average accuracy and configuration details for further processing.
@@ -34,7 +33,7 @@ def run_pipeline(configuration, data, labels, cross_validator):
         labels (pandas.Series): The labels for the text data.
         cross_validator (KFold): The cross-validation splitting strategy.
     """
-    pipeline = Pipeline([
+    pline = Pipeline([
         ('tfidf', TfidfVectorizer(
             binary=configuration['tfidf__binary'],
             max_features=configuration['tfidf__max_features'],
@@ -45,7 +44,7 @@ def run_pipeline(configuration, data, labels, cross_validator):
         ('clf', LogisticRegression(max_iter=configuration['clf__max_iter']))
     ])
 
-    accuracies = cross_val_score(pipeline, data, labels, cv=cross_validator, scoring='accuracy', n_jobs=-1)
+    accuracies = cross_val_score(pline, data, labels, cv=c_val, scoring='accuracy', n_jobs=-1)
 
     avg_accuracy = np.mean(accuracies)
     return avg_accuracy, configuration

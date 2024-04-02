@@ -19,7 +19,8 @@ def run_pipeline(configuration, data, labels, cross_validator):
     Returns the average accuracy and configuration details for further processing.
 
     Args:
-        configuration (dict): Configuration settings for the TF-IDF vectorizer and CatBoostClassifier.
+        configuration (dict): Configuration settings for the
+        TF-IDF vectorizer and CatBoostClassifier.
         data (pandas.Series): The text data to classify.
         labels (pandas.Series): The labels for the text data.
         cross_validator (KFold): The cross-validation splitting strategy.

@@ -16,6 +16,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import MultinomialNB
 
 from prepare_data import load_and_clean_data
 
@@ -29,7 +30,8 @@ def train_and_evaluate_model_log(configuration, train_data, train_labels, test_d
     Trains the model on the "dev" dataset and evaluates it on the "test" dataset.
 
     Args:
-        configuration (dict): Configuration for the TF-IDF vectorizer and logistic regression classifier.
+        configuration (dict): Configuration for the
+        TF-IDF vectorizer and logistic regression classifier.
         train_data (pandas.Series): The text data to train on.
         train_labels (pandas.Series): The labels for the training data.
         test_data (pandas.Series): The text data to test on.
@@ -63,7 +65,8 @@ def train_and_evaluate_model_cat(configuration, train_data, train_labels, test_d
     Trains the model with CatBoost on the training dataset and evaluates it on the testing dataset.
 
     Args:
-        configuration (dict): Configuration for the TF-IDF vectorizer and CatBoost classifier.
+        configuration (dict): Configuration for the
+        TF-IDF vectorizer and CatBoost classifier.
         train_data (pandas.Series): The text data to train on.
         train_labels (pandas.Series): The labels for the training data.
         test_data (pandas.Series): The text data to test on.
@@ -98,12 +101,14 @@ def train_and_evaluate_model_cat(configuration, train_data, train_labels, test_d
     print("---------------------------------------------------------")
 
 
-def train_and_evaluate_model_decision(configuration, train_data, train_labels, test_data, test_labels):
+def train_and_evaluate_model_decision(config, train_data, train_labels, test_data, test_labels):
     """
-    Trains the model with a Decision Tree on the training dataset and evaluates it on the testing dataset.
+    Trains the model with a Decision Tree on the training dataset
+    and evaluates it on the testing dataset.
 
     Args:
-        configuration (dict): Configuration for the TF-IDF vectorizer and Decision Tree classifier.
+        config (dict): Configuration for the
+        TF-IDF vectorizer and Decision Tree classifier.
         train_data (pandas.Series): The text data to train on.
         train_labels (pandas.Series): The labels for the training data.
         test_data (pandas.Series): The text data to test on.
@@ -111,17 +116,17 @@ def train_and_evaluate_model_decision(configuration, train_data, train_labels, t
     """
     pipeline = Pipeline([
         ('tfidf', TfidfVectorizer(
-            binary=configuration.get('tfidf__binary', True),
-            max_features=configuration.get('tfidf__max_features', None),
-            ngram_range=configuration.get('tfidf__ngram_range', (1, 1)),
-            stop_words=configuration.get('tfidf__stop_words', 'english'),
-            use_idf=configuration.get('tfidf__use_idf', True)
+            binary=config.get('tfidf__binary', True),
+            max_features=config.get('tfidf__max_features', None),
+            ngram_range=config.get('tfidf__ngram_range', (1, 1)),
+            stop_words=config.get('tfidf__stop_words', 'english'),
+            use_idf=config.get('tfidf__use_idf', True)
         )),
         ('decision_tree', DecisionTreeClassifier(
-            max_depth=configuration.get('decisiontree__max_depth', None),
-            min_samples_split=configuration.get('decisiontree__min_samples_split', 2),
-            min_samples_leaf=configuration.get('decisiontree__min_samples_leaf', 1),
-            class_weight=configuration.get('decisiontree__class_weight', None)
+            max_depth=config.get('decisiontree__max_depth', None),
+            min_samples_split=config.get('decisiontree__min_samples_split', 2),
+            min_samples_leaf=config.get('decisiontree__min_samples_leaf', 1),
+            class_weight=config.get('decisiontree__class_weight', None)
         ))
     ])
 
@@ -131,18 +136,20 @@ def train_and_evaluate_model_decision(configuration, train_data, train_labels, t
     accuracy = accuracy_score(test_labels, predictions)
     end_time = time.time()
 
-    print(f"Running configuration: {configuration}")
+    print(f"Running configuration: {config}")
     print(f"Test accuracy: {accuracy}")
     print(f"Time taken: {end_time - start_time} seconds")
     print("---------------------------------------------------------")
 
 
-def train_and_evaluate_model_random(config_params, train_data, train_labels, test_data, test_labels):
+def train_and_evaluate_model_random(cfg_params, train_data, train_labels, test_data, test_labels):
     """
-        Trains the model with a Random Forest on the training dataset and evaluates it on the testing dataset.
+        Trains the model with a Random Forest on the training dataset
+        and evaluates it on the testing dataset.
 
         Args:
-            config_params (dict): Configuration for the TF-IDF vectorizer and Random Forest classifier.
+            cfg_params (dict): Configuration for the
+            TF-IDF vectorizer and Random Forest classifier.
             train_data (pandas.Series): The text data to train on.
             train_labels (pandas.Series): The labels for the training data.
             test_data (pandas.Series): The text data to test on.
@@ -150,19 +157,19 @@ def train_and_evaluate_model_random(config_params, train_data, train_labels, tes
         """
     pipeline = Pipeline([
         ('tfidf', TfidfVectorizer(
-            binary=config_params.get('tfidf__binary', True),
-            max_features=config_params.get('tfidf__max_features', None),
-            ngram_range=config_params.get('tfidf__ngram_range', (1, 1)),
-            stop_words=config_params.get('tfidf__stop_words', 'english'),
-            use_idf=config_params.get('tfidf__use_idf', True)
+            binary=cfg_params.get('tfidf__binary', True),
+            max_features=cfg_params.get('tfidf__max_features', None),
+            ngram_range=cfg_params.get('tfidf__ngram_range', (1, 1)),
+            stop_words=cfg_params.get('tfidf__stop_words', 'english'),
+            use_idf=cfg_params.get('tfidf__use_idf', True)
         )),
         ('random_forest', RandomForestClassifier(
-            n_estimators=config_params.get('rf__n_estimators', 100),
-            max_depth=config_params.get('rf__max_depth', None),
-            min_samples_split=config_params.get('rf__min_samples_split', 2),
-            min_samples_leaf=config_params.get('rf__min_samples_leaf', 1),
-            max_features=config_params.get('rf__max_features', 'auto'),
-            class_weight=config_params.get('rf__class_weight', None)
+            n_estimators=cfg_params.get('rf__n_estimators', 100),
+            max_depth=cfg_params.get('rf__max_depth', None),
+            min_samples_split=cfg_params.get('rf__min_samples_split', 2),
+            min_samples_leaf=cfg_params.get('rf__min_samples_leaf', 1),
+            max_features=cfg_params.get('rf__max_features', 'auto'),
+            class_weight=cfg_params.get('rf__class_weight', None)
         ))
     ])
 
@@ -172,20 +179,19 @@ def train_and_evaluate_model_random(config_params, train_data, train_labels, tes
     accuracy = accuracy_score(test_labels, predictions)
     end_time = time.time()
 
-    print(f"Running configuration: {config_params}")
+    print(f"Running configuration: {cfg_params}")
     print(f"Test accuracy: {accuracy}")
     print(f"Time taken: {end_time - start_time} seconds")
     print("---------------------------------------------------------")
 
-
-from sklearn.naive_bayes import MultinomialNB
-
-def train_and_evaluate_model_naive(config_params, train_data, train_labels, test_data, test_labels):
+def train_and_evaluate_model_naive(cfg_params, train_data, train_labels, test_data, test_labels):
     """
-    Trains the model with Multinomial Naive Bayes on the training dataset and evaluates it on the testing dataset.
+    Trains the model with Multinomial Naive Bayes on the training dataset
+    and evaluates it on the testing dataset.
 
     Args:
-        config_params (dict): Configuration for the TF-IDF vectorizer and Multinomial Naive Bayes classifier.
+        cfg_params (dict): Configuration for the
+        TF-IDF vectorizer and Multinomial Naive Bayes classifier.
         train_data (pandas.Series): The text data to train on.
         train_labels (pandas.Series): The labels for the training data.
         test_data (pandas.Series): The text data to test on.
@@ -193,13 +199,13 @@ def train_and_evaluate_model_naive(config_params, train_data, train_labels, test
     """
     pipeline = Pipeline([
         ('tfidf', TfidfVectorizer(
-            max_features=config_params.get('vectorizer__max_features', None),
-            ngram_range=config_params.get('vectorizer__ngram_range', (1, 1)),
-            stop_words=config_params.get('vectorizer__stop_words', 'english'),
+            max_features=cfg_params.get('vectorizer__max_features', None),
+            ngram_range=cfg_params.get('vectorizer__ngram_range', (1, 1)),
+            stop_words=cfg_params.get('vectorizer__stop_words', 'english'),
         )),
         ('naive_bayes', MultinomialNB(
-            alpha=config_params.get('classifier__alpha', 1.0),
-            fit_prior=config_params.get('classifier__fit_prior', True),
+            alpha=cfg_params.get('classifier__alpha', 1.0),
+            fit_prior=cfg_params.get('classifier__fit_prior', True),
         ))
     ])
 
@@ -209,7 +215,7 @@ def train_and_evaluate_model_naive(config_params, train_data, train_labels, test
     accuracy = accuracy_score(test_labels, predictions)
     end_time = time.time()
 
-    print(f"Running configuration: {config_params}")
+    print(f"Running configuration: {cfg_params}")
     print(f"Test accuracy: {accuracy}")
     print(f"Time taken: {end_time - start_time} seconds")
     print("---------------------------------------------------------")
